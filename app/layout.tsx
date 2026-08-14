@@ -8,9 +8,10 @@ const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" })
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" })
 
 export const metadata: Metadata = {
-  title: { default: "기업앵커 | 기업을 읽는 가장 빠른 기준점", template: "%s" },
-  description: "기업 기본정보와 최근 재무를 무료로 확인하고 관심기업의 변화를 추적하세요.",
   metadataBase: new URL("https://eve48-hub.github.io/company-anchor/"),
+  title: { default: "기업앵커 | 기업을 읽는 가장 빠른 기준점", template: "%s | 기업앵커" },
+  description: "기업 기본정보와 최근 재무정보를 출처·기준일과 함께 확인하는 무료 기업정보 서비스입니다.",
+  alternates: { canonical: "https://eve48-hub.github.io/company-anchor/" },
   openGraph: {
     title: "기업앵커",
     description: "기업을 읽는 가장 빠른 기준점",

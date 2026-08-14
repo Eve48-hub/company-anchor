@@ -13,10 +13,12 @@
 ## 구현 범위
 
 - v0 [Anchor Landing Page](https://v0.app/templates/anchor-landing-page-IKQcK2VoySl) 시각 시스템 기반 랜딩
-- 기업 검색
-- 기업 상세 대시보드
-- 재무 요약·최근 3년 표
-- 데이터 출처·샘플 상태 표시
+- 샘플 기업 검색
+- 샘플 기업 상세 대시보드
+- 재무 상세 페이지(계정 필터·단위 변환·차트·연도별 표)
+- 브라우저 로컬 관심기업 저장 프로토타입
+- 샘플 페이지 noindex·canonical·sitemap
+- 데이터 출처·기준일·샘플 여부 표시
 - 정적 생성과 GitHub Pages 배포
 
 ## 아직 구현하지 않은 범위
@@ -27,7 +29,7 @@
 - 기업 소속 인증
 - 실제 SEO 대량 페이지
 
-실제 API 개발은 [`docs/API-FEASIBILITY.md`](docs/API-FEASIBILITY.md)의 GO 조건을 통과한 뒤 시작합니다. 공식 출처별 상세 조사와 호출·권리 조건은 [`docs/API-FEASIBILITY-RESEARCH.md`](docs/API-FEASIBILITY-RESEARCH.md)에 있습니다.
+실제 API 개발은 [`docs/API-FEASIBILITY.md`](docs/API-FEASIBILITY.md)의 GO 조건을 통과한 뒤 시작합니다. 공식 출처별 상세 조사와 호출·권리 조건은 [`docs/API-FEASIBILITY-RESEARCH.md`](docs/API-FEASIBILITY-RESEARCH.md)에 있습니다. PRD 01~06의 구현·보류·다음 게이트는 [`docs/PRD-IMPLEMENTATION-LOG.md`](docs/PRD-IMPLEMENTATION-LOG.md)에서 추적합니다.
 
 ## 기술
 
