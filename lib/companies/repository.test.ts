@@ -14,7 +14,7 @@ const repository = [
     foundedAt: "2020-08-07",
     website: "https://doitnow.ai.kr",
     description: "기업의 업무 전환을 돕는 AI 솔루션 기업",
-    source: { label: "샘플 데이터", asOf: "2026-08-15", isSample: true },
+    source: { label: "샘플 데이터", asOf: "2026-08-15", isSample: true, indexingApproved: false },
     financials: [],
   },
 ]

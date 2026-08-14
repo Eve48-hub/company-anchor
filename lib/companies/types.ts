@@ -4,6 +4,7 @@ export interface DataSource {
   label: string
   asOf: string
   isSample: boolean
+  indexingApproved: boolean
 }
 
 export interface FinancialRecord {

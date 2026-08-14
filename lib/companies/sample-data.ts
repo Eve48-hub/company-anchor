@@ -4,6 +4,7 @@ const sampleSource = {
   label: "화면 검증용 샘플 데이터",
   asOf: "2026-08-15",
   isSample: true,
+  indexingApproved: false,
 } as const
 
 export const sampleCompanies: Company[] = [
