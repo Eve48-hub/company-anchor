@@ -1,437 +1,86 @@
 "use client"
 
+import Link from "next/link"
+import { useEffect, useState } from "react"
+import { ArrowRight, CheckCircle, MagnifyingGlass, TrendUp } from "@phosphor-icons/react"
+
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Terminal, Code, Play } from "@phosphor-icons/react"
-import { useEffect, useState, useRef } from "react"
 
-const CLI_SEQUENCE = {
-  command: "anchor deploy ./agent",
-  steps: [
-    { text: "Scanning agent configuration...", delay: 600 },
-    { text: "Building container image...", delay: 800 },
-    { text: "Deploying to edge network...", delay: 1000 },
-  ],
-  status: {
-    endpoint: "agent-7x9k.anchor.run",
-    coldStart: "47ms",
-  },
-}
-
-const AGENT_SEQUENCE = {
-  lines: [
-    { text: "import { Agent } from '@anchor/sdk'", delay: 80 },
-    { text: "", delay: 200 },
-    { text: "const agent = new Agent({", delay: 80 },
-    { text: "  model: 'gpt-5.2-codex',", delay: 60 },
-    { text: "  memory: true,", delay: 60 },
-    { text: "  tools: ['web', 'code', 'files']", delay: 60 },
-    { text: "})", delay: 100 },
-    { text: "", delay: 200 },
-    { text: "await agent.run('Analyze the codebase')", delay: 80 },
-  ],
-  outputs: [
-    { text: "Agent initialized...", delay: 400 },
-    { text: "Loading tools: web, code, files", delay: 300 },
-    { text: "Scanning 847 files...", delay: 500 },
-    { text: "Found 12 critical patterns", delay: 400 },
-    { text: "Generating report...", delay: 600 },
-    { text: "✓ Analysis complete in 2.3s", delay: 0 },
-  ],
-}
-
-const GRID_ACTIVATION_MAP: Record<number, number[]> = {
-  0: [5, 23, 47, 68, 92, 115, 138, 167, 189, 215],
-  1: [12, 31, 56, 78, 103, 127, 152, 178, 201, 223, 8, 45, 89, 134, 176],
-  2: [3, 19, 42, 65, 88, 112, 139, 163, 186, 209, 234, 17, 54, 97, 143, 188, 211, 237],
-}
-
-let animationStarted = false
+const steps = ["기업 식별정보 확인", "최신 재무연도 확인", "데이터 출처 검증"]
 
 export function HeroSection() {
-  const [typedCommand, setTypedCommand] = useState("")
-  const [visibleSteps, setVisibleSteps] = useState<number[]>([])
-  const [showStatus, setShowStatus] = useState(false)
-  const [cursorVisible, setCursorVisible] = useState(true)
-  const [activeCells, setActiveCells] = useState<Set<number>>(new Set())
-
-  const [showAgentTerminal, setShowAgentTerminal] = useState(false)
-  const [agentLines, setAgentLines] = useState<string[]>([])
-  const [agentOutputs, setAgentOutputs] = useState<string[]>([])
-  const [isAgentRunning, setIsAgentRunning] = useState(false)
-  const [lineConnectorProgress, setLineConnectorProgress] = useState(0)
-
-  const timeoutsRef = useRef<NodeJS.Timeout[]>([])
-  const intervalsRef = useRef<NodeJS.Timeout[]>([])
+  const [visibleSteps, setVisibleSteps] = useState(0)
 
   useEffect(() => {
-    if (animationStarted) return
-    animationStarted = true
-
-    const addTimeout = (fn: () => void, delay: number) => {
-      const id = setTimeout(fn, delay)
-      timeoutsRef.current.push(id)
-      return id
-    }
-
-    const addInterval = (fn: () => void, delay: number) => {
-      const id = setInterval(fn, delay)
-      intervalsRef.current.push(id)
-      return id
-    }
-
-    const cursorInterval = addInterval(() => {
-      setCursorVisible((v) => !v)
-    }, 530)
-
-    let charIndex = 0
-    const typeCommand = () => {
-      if (charIndex <= CLI_SEQUENCE.command.length) {
-        setTypedCommand(CLI_SEQUENCE.command.slice(0, charIndex))
-        charIndex++
-        addTimeout(typeCommand, 50 + Math.random() * 30)
-      } else {
-        addTimeout(() => showSteps(0), 400)
-      }
-    }
-
-    const activateCellsForStep = (stepIndex: number) => {
-      const cells = GRID_ACTIVATION_MAP[stepIndex] || []
-      cells.forEach((cellIndex, i) => {
-        addTimeout(() => {
-          setActiveCells((prev) => new Set([...prev, cellIndex]))
-        }, i * 60)
-      })
-    }
-
-    const showSteps = (stepIndex: number) => {
-      if (stepIndex < CLI_SEQUENCE.steps.length) {
-        setVisibleSteps((prev) => [...prev, stepIndex])
-        activateCellsForStep(stepIndex)
-        addTimeout(() => showSteps(stepIndex + 1), CLI_SEQUENCE.steps[stepIndex].delay)
-      } else {
-        addTimeout(() => {
-          setShowStatus(true)
-          clearInterval(cursorInterval)
-          setCursorVisible(false)
-          addTimeout(startAgentTerminal, 800)
-        }, 500)
-      }
-    }
-
-    const startAgentTerminal = () => {
-      let progress = 0
-      const lineInterval = addInterval(() => {
-        progress += 5
-        setLineConnectorProgress(progress)
-        if (progress >= 100) {
-          clearInterval(lineInterval)
-          setShowAgentTerminal(true)
-          addTimeout(typeAgentCode, 300)
-        }
-      }, 20)
-    }
-
-    const typeAgentCode = () => {
-      let lineIndex = 0
-      const lines = [...AGENT_SEQUENCE.lines]
-
-      const typeLine = () => {
-        if (lineIndex < lines.length) {
-          const currentLine = lines[lineIndex]
-          const currentDelay = currentLine.delay
-          setAgentLines((prev) => [...prev, currentLine.text])
-          lineIndex++
-          addTimeout(typeLine, currentDelay)
-        } else {
-          addTimeout(runAgentOutputs, 400)
-        }
-      }
-      typeLine()
-    }
-
-    const runAgentOutputs = () => {
-      setIsAgentRunning(true)
-      let outputIndex = 0
-      const outputs = [...AGENT_SEQUENCE.outputs]
-
-      const showOutput = () => {
-        if (outputIndex < outputs.length) {
-          const currentOutput = outputs[outputIndex]
-          const currentDelay = currentOutput.delay
-          setAgentOutputs((prev) => [...prev, currentOutput.text])
-          outputIndex++
-          if (outputIndex < outputs.length) {
-            addTimeout(showOutput, currentDelay)
-          } else {
-            addTimeout(() => setIsAgentRunning(false), 300)
-          }
-        }
-      }
-      showOutput()
-    }
-
-    addTimeout(typeCommand, 800)
-
-    return () => {
-      timeoutsRef.current.forEach(clearTimeout)
-      intervalsRef.current.forEach(clearInterval)
-    }
+    const timers = steps.map((_, index) => window.setTimeout(() => setVisibleSteps(index + 1), 600 + index * 650))
+    return () => timers.forEach(window.clearTimeout)
   }, [])
 
   return (
-    <section className="relative min-h-screen pb-12 overflow-hidden">
-      <div className="absolute inset-0 -top-20 -left-20 -right-20 overflow-hidden">
-        <div className="absolute inset-0 grid grid-cols-10 sm:grid-cols-15 lg:grid-cols-20 gap-3 sm:gap-4 lg:gap-5 p-4 opacity-30">
-          {[...Array(240)].map((_, i) => (
-            <div
-              key={i}
-              className={`aspect-square rounded-sm transition-all duration-700 ${
-                activeCells.has(i)
-                  ? "bg-[var(--color-keppel-500)] shadow-[0_0_30px_var(--color-keppel-500)]"
-                  : "border border-[var(--color-baltic-sea-800)] bg-transparent"
-              }`}
-              style={{
-                opacity: activeCells.has(i) ? 0.8 : 0.4,
-              }}
-            />
+    <section className="relative min-h-screen overflow-hidden pb-20 pt-20">
+      <div aria-hidden className="absolute inset-0 -left-20 -right-20 -top-20 overflow-hidden">
+        <div className="grid grid-cols-10 gap-4 p-4 opacity-25 sm:grid-cols-15 lg:grid-cols-20">
+          {Array.from({ length: 240 }).map((_, index) => (
+            <span key={index} className={`aspect-square rounded-sm border transition-all duration-1000 ${[5, 31, 68, 103, 139, 178, 215].includes(index) ? "border-[var(--color-keppel-600)] bg-[var(--color-keppel-500)] shadow-[0_0_28px_var(--color-keppel-700)]" : "border-[var(--color-baltic-sea-800)]"}`} />
           ))}
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/30" />
         <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-background" />
       </div>
 
-      <div className="relative mx-auto max-w-[1400px] px-2.5 sm:px-6 lg:px-12">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-12 lg:gap-20">
-          {/* Left column - text content */}
-          <div className="lg:max-w-xl lg:min-h-screen flex flex-col justify-center pt-24 lg:pt-20">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--color-keppel-700)] bg-[var(--color-keppel-950)] px-3 py-1 text-xs text-[var(--color-keppel-300)] mb-8 w-fit">
-              <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-keppel-400)]" />
-              v2.0 now available
-            </div>
-
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[var(--color-baltic-sea-50)] leading-[1.1]">
-              Containers for
-              <br />
-              <span className="text-[var(--color-keppel-400)]">autonomous</span>
-              <br />
-              agents
-            </h1>
-
-            <p className="mt-6 text-lg text-[var(--color-baltic-sea-400)] max-w-md leading-relaxed">
-              Deploy AI agents in isolated, secure containers with sub-50ms cold starts. Scale from zero to thousands
-              instantly.
-            </p>
-
-            <div className="mt-10 flex flex-wrap items-center gap-4">
-              <Button
-                size="lg"
-                className="bg-[var(--color-keppel-500)] hover:bg-[var(--color-keppel-600)] text-[var(--color-keppel-950)] font-semibold px-6"
-              >
-                Start deploying
-                <ArrowRight className="ml-2 h-4 w-4" weight="bold" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="lg"
-                className="text-[var(--color-baltic-sea-300)] hover:text-[var(--color-baltic-sea-100)] hover:bg-[var(--color-baltic-sea-900)]"
-              >
-                View documentation
-              </Button>
-            </div>
+      <div className="relative mx-auto grid min-h-[calc(100vh-5rem)] max-w-[1400px] items-center gap-14 px-4 py-16 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20 lg:px-12">
+        <div>
+          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-[var(--color-keppel-700)] bg-[var(--color-keppel-950)] px-3 py-1 text-xs text-[var(--color-keppel-300)]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-keppel-400)]" />
+            기업정보, 이제 무료로
           </div>
+          <h1 className="text-4xl font-bold leading-[1.08] tracking-tight text-[var(--color-baltic-sea-50)] sm:text-5xl lg:text-7xl">
+            기업을 읽는<br />가장 빠른<br /><span className="text-[var(--color-keppel-400)]">기준점</span>
+          </h1>
+          <p className="mt-7 max-w-xl text-lg leading-relaxed text-[var(--color-baltic-sea-300)]">
+            기업 기본정보와 최근 재무를 한곳에서 확인하고, 관심기업의 변화를 놓치지 마세요. 핵심 정보는 가입 후에도 무료입니다.
+          </p>
+          <div className="mt-10 flex flex-wrap gap-3">
+            <Button asChild size="lg" className="bg-[var(--color-keppel-500)] font-semibold text-[var(--color-keppel-950)] hover:bg-[var(--color-keppel-400)]">
+              <Link href="/search"><MagnifyingGlass weight="bold" className="h-4 w-4" />기업 검색하기</Link>
+            </Button>
+            <Button asChild size="lg" variant="ghost" className="text-[var(--color-baltic-sea-200)] hover:bg-[var(--color-baltic-sea-900)] hover:text-white">
+              <Link href="/company/doitnow">샘플 기업 보기<ArrowRight className="h-4 w-4" /></Link>
+            </Button>
+          </div>
+          <p className="mt-5 text-xs text-[var(--color-baltic-sea-500)]">현재 1차 UI 검증 버전 · 모든 재무 수치는 샘플로 표시됩니다.</p>
+        </div>
 
-          {/* Right column - terminals */}
-          <div className="lg:flex-1 lg:max-w-2xl lg:min-h-screen flex flex-col items-center justify-center lg:pt-20">
-            {/* Terminal 1 - Deploy */}
-            <div className="w-full rounded-xl border border-[var(--color-baltic-sea-800)] bg-[var(--color-baltic-sea-950)] overflow-hidden shadow-2xl">
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-[var(--color-baltic-sea-800)]">
-                <div className="flex gap-1.5">
-                  <div className="h-3 w-3 rounded-full bg-[var(--color-baltic-sea-700)]" />
-                  <div className="h-3 w-3 rounded-full bg-[var(--color-baltic-sea-700)]" />
-                  <div className="h-3 w-3 rounded-full bg-[var(--color-baltic-sea-700)]" />
-                </div>
-                <div className="flex-1 text-center">
-                  <span className="text-xs text-[var(--color-baltic-sea-500)] font-mono">terminal</span>
-                </div>
-              </div>
-
-              <div className="p-5 font-mono text-sm">
-                <div className="flex items-center gap-2 text-[var(--color-baltic-sea-300)]">
-                  <span className="text-[var(--color-keppel-500)]">→</span>
-                  <span className="text-[var(--color-keppel-500)]">~</span>
-                  <span>
-                    {typedCommand}
-                    {cursorVisible && (
-                      <span className="inline-block w-2 h-4 bg-[var(--color-baltic-sea-400)] ml-0.5 animate-pulse" />
-                    )}
-                  </span>
-                </div>
-
-                <div className="mt-4 space-y-2">
-                  {visibleSteps.map((stepIndex) => (
-                    <div
-                      key={stepIndex}
-                      className="flex items-center gap-2 text-[var(--color-baltic-sea-400)] animate-in fade-in slide-in-from-left-2 duration-300"
-                    >
-                      {stepIndex < visibleSteps.length - 1 || showStatus ? (
-                        <span className="text-[var(--color-keppel-500)]">✓</span>
-                      ) : (
-                        <span className="inline-block h-3 w-3 border-2 border-[var(--color-keppel-500)] border-t-transparent rounded-full animate-spin" />
-                      )}
-                      <span>{CLI_SEQUENCE.steps[stepIndex].text}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {showStatus && (
-                  <div className="mt-5 p-4 rounded-lg border border-[var(--color-keppel-800)] bg-[var(--color-keppel-950)] animate-in fade-in zoom-in-95 duration-500">
-                    <div className="flex items-center gap-2 text-[var(--color-keppel-400)] text-xs uppercase tracking-wider mb-3">
-                      <Play weight="fill" className="h-3 w-3" />
-                      <span>Deployed</span>
-                    </div>
-                    <div className="space-y-1.5 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-[var(--color-baltic-sea-500)]">endpoint</span>
-                        <span className="text-[var(--color-baltic-sea-200)]">{CLI_SEQUENCE.status.endpoint}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-[var(--color-baltic-sea-500)]">cold start</span>
-                        <span className="text-[var(--color-keppel-400)]">{CLI_SEQUENCE.status.coldStart}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+        <div className="w-full overflow-hidden rounded-2xl border border-[var(--color-baltic-sea-800)] bg-[var(--color-baltic-sea-950)] shadow-2xl">
+          <div className="flex items-center gap-2 border-b border-[var(--color-baltic-sea-800)] px-5 py-4">
+            <div className="flex gap-1.5"><span className="h-3 w-3 rounded-full bg-[var(--color-baltic-sea-700)]" /><span className="h-3 w-3 rounded-full bg-[var(--color-baltic-sea-700)]" /><span className="h-3 w-3 rounded-full bg-[var(--color-baltic-sea-700)]" /></div>
+            <span className="flex-1 text-center font-mono text-xs text-[var(--color-baltic-sea-500)]">company search</span>
+          </div>
+          <div className="p-5 sm:p-7">
+            <div className="flex items-center gap-3 rounded-xl border border-[var(--color-baltic-sea-800)] bg-[var(--color-baltic-sea-900)] px-4 py-3 font-mono text-sm">
+              <MagnifyingGlass className="h-4 w-4 text-[var(--color-keppel-400)]" />
+              <span className="text-[var(--color-baltic-sea-200)]">주식회사 두잇나우</span>
             </div>
-
-            {/* Connector line */}
-            {lineConnectorProgress > 0 && (
-              <div className="relative w-px h-16 flex items-center justify-center">
-                <div
-                  className="absolute top-0 w-px bg-gradient-to-b from-[var(--color-keppel-500)] to-[var(--color-keppel-400)] transition-all duration-100"
-                  style={{
-                    height: `${lineConnectorProgress}%`,
-                    boxShadow: "0 0 20px var(--color-keppel-500), 0 0 40px var(--color-keppel-600)",
-                  }}
-                />
-                {lineConnectorProgress >= 100 && (
-                  <div className="absolute -bottom-1 h-3 w-3 rounded-full bg-[var(--color-keppel-500)] animate-pulse shadow-[0_0_15px_var(--color-keppel-500)]" />
-                )}
-              </div>
-            )}
-
-            {/* Terminal 2 - Agent */}
-            {showAgentTerminal && (
-              <div
-                className="w-full rounded-xl border border-[var(--color-baltic-sea-800)] bg-[var(--color-baltic-sea-950)] overflow-hidden animate-in fade-in zoom-in-95 duration-500"
-                style={{
-                  boxShadow: "0 0 60px -10px var(--color-keppel-900)",
-                }}
-              >
-                <div className="flex items-center gap-2 px-4 py-3 border-b border-[var(--color-baltic-sea-800)]">
-                  <div className="flex gap-1.5">
-                    <div className="h-3 w-3 rounded-full bg-[var(--color-baltic-sea-700)]" />
-                    <div className="h-3 w-3 rounded-full bg-[var(--color-baltic-sea-700)]" />
-                    <div className="h-3 w-3 rounded-full bg-[var(--color-keppel-500)]" />
-                  </div>
-                  <div className="flex-1 text-center">
-                    <span className="text-xs text-[var(--color-baltic-sea-500)] font-mono flex items-center justify-center gap-2">
-                      <Code weight="bold" className="h-3 w-3" />
-                      agent.ts
-                    </span>
-                  </div>
+            <div className="mt-5 space-y-2 font-mono text-sm">
+              {steps.map((step, index) => (
+                <div key={step} className={`flex items-center gap-2 transition-all duration-500 ${index < visibleSteps ? "translate-x-0 opacity-100" : "translate-x-2 opacity-20"}`}>
+                  <CheckCircle weight="fill" className="h-4 w-4 text-[var(--color-keppel-500)]" />
+                  <span className="text-[var(--color-baltic-sea-400)]">{step}</span>
                 </div>
-
-                <div className="p-5 font-mono text-sm">
-                  <div className="space-y-0.5">
-                    {agentLines.map((line, i) => (
-                      <div key={i} className="animate-in fade-in slide-in-from-left-1 duration-150">
-                        {line === "" ? (
-                          <div className="h-5" />
-                        ) : line.startsWith("import") ? (
-                          <span>
-                            <span className="text-[var(--color-baltic-sea-500)]">import</span>
-                            <span className="text-[var(--color-baltic-sea-300)]">
-                              {" "}
-                              {"{"} Agent {"}"}{" "}
-                            </span>
-                            <span className="text-[var(--color-baltic-sea-500)]">from</span>
-                            <span className="text-[var(--color-keppel-400)]"> '@anchor/sdk'</span>
-                          </span>
-                        ) : line.startsWith("const") ? (
-                          <span>
-                            <span className="text-[var(--color-baltic-sea-500)]">const</span>
-                            <span className="text-[var(--color-baltic-sea-300)]"> agent = </span>
-                            <span className="text-[var(--color-baltic-sea-500)]">new</span>
-                            <span className="text-[var(--color-keppel-400)]"> Agent</span>
-                            <span className="text-[var(--color-baltic-sea-300)]">({"{"}</span>
-                          </span>
-                        ) : line.startsWith("await") ? (
-                          <span>
-                            <span className="text-[var(--color-baltic-sea-500)]">await</span>
-                            <span className="text-[var(--color-baltic-sea-300)]"> agent.</span>
-                            <span className="text-[var(--color-keppel-400)]">run</span>
-                            <span className="text-[var(--color-baltic-sea-300)]">(</span>
-                            <span className="text-[var(--color-keppel-400)]">'Analyze the codebase'</span>
-                            <span className="text-[var(--color-baltic-sea-300)]">)</span>
-                          </span>
-                        ) : line.includes(":") ? (
-                          <span className="text-[var(--color-baltic-sea-400)]">
-                            {"  "}
-                            {line.split(":")[0].trim()}
-                            <span className="text-[var(--color-baltic-sea-500)]">:</span>
-                            <span className="text-[var(--color-keppel-400)]">{line.split(":")[1]}</span>
-                          </span>
-                        ) : (
-                          <span className="text-[var(--color-baltic-sea-300)]">{line}</span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-
-                  {agentOutputs.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-[var(--color-baltic-sea-800)]">
-                      <div className="flex items-center gap-2 text-xs text-[var(--color-baltic-sea-500)] mb-3">
-                        <Terminal weight="bold" className="h-3 w-3" />
-                        <span>output</span>
-                        {isAgentRunning && (
-                          <span className="flex gap-0.5 ml-2">
-                            <span
-                              className="h-1 w-1 rounded-full bg-[var(--color-keppel-500)] animate-bounce"
-                              style={{ animationDelay: "0ms" }}
-                            />
-                            <span
-                              className="h-1 w-1 rounded-full bg-[var(--color-keppel-500)] animate-bounce"
-                              style={{ animationDelay: "150ms" }}
-                            />
-                            <span
-                              className="h-1 w-1 rounded-full bg-[var(--color-keppel-500)] animate-bounce"
-                              style={{ animationDelay: "300ms" }}
-                            />
-                          </span>
-                        )}
-                      </div>
-                      <div className="space-y-1">
-                        {agentOutputs.map((output, i) => (
-                          <div
-                            key={i}
-                            className={`text-xs animate-in fade-in slide-in-from-left-1 duration-200 ${
-                              output.startsWith("✓")
-                                ? "text-[var(--color-keppel-400)]"
-                                : "text-[var(--color-baltic-sea-400)]"
-                            }`}
-                          >
-                            <span className="text-[var(--color-keppel-600)] mr-2">→</span>
-                            {output}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
+              ))}
+            </div>
+            <div className="mt-6 rounded-xl border border-[var(--color-keppel-800)] bg-[var(--color-keppel-950)] p-5">
+              <div className="mb-5 flex items-start justify-between gap-4">
+                <div><p className="text-xs uppercase tracking-widest text-[var(--color-keppel-400)]">2025 재무 요약</p><h2 className="mt-1 text-xl font-semibold">주식회사 두잇나우</h2></div>
+                <span className="rounded-full border border-amber-700/60 bg-amber-950/50 px-2.5 py-1 text-[11px] text-amber-300">샘플 데이터</span>
               </div>
-            )}
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {[['매출','54.2억원'],['영업이익','3.1억원'],['당기순이익','2.5억원']].map(([label, value]) => (
+                  <div key={label} className="rounded-lg border border-[var(--color-keppel-900)] bg-background/30 p-3"><p className="text-xs text-[var(--color-baltic-sea-500)]">{label}</p><p className="mt-1 font-mono text-sm text-[var(--color-baltic-sea-100)]">{value}</p></div>
+                ))}
+              </div>
+              <div className="mt-4 flex items-center gap-2 text-xs text-[var(--color-keppel-300)]"><TrendUp className="h-4 w-4" />출처·기준일·연결/별도 구분을 필수 표시합니다.</div>
+            </div>
           </div>
         </div>
       </div>
