@@ -27,7 +27,7 @@
 - 기업 소속 인증
 - 실제 SEO 대량 페이지
 
-실제 API 개발은 [`docs/API-FEASIBILITY.md`](docs/API-FEASIBILITY.md)의 GO 조건을 통과한 뒤 시작합니다.
+실제 API 개발은 [`docs/API-FEASIBILITY.md`](docs/API-FEASIBILITY.md)의 GO 조건을 통과한 뒤 시작합니다. 공식 출처별 상세 조사와 호출·권리 조건은 [`docs/API-FEASIBILITY-RESEARCH.md`](docs/API-FEASIBILITY-RESEARCH.md)에 있습니다.
 
 ## 기술
 

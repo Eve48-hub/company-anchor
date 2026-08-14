@@ -4,6 +4,12 @@ Updated: 2026-08-15
 
 ## Decision
 
+- **조건부 GO:** `금융위원회 기업기본정보 → OpenDART → 국세청 사업자상태` 3계층을 우선 검증한다.
+- **초기 제품 범위:** 대한민국 전체 사업자가 아니라 **공시기업 및 식별 가능한 한국 법인**이다.
+- **무료 뉴스:** BIGKinds 신규 OPEN API 신청 중단으로 1차 MVP에서는 NO-GO다.
+- **특허·R&D:** KIPRIS Plus·NTIS는 핵심 제품 지표 확인 후 DEFER한다.
+- 공식 출처별 상세 조사: [`API-FEASIBILITY-RESEARCH.md`](API-FEASIBILITY-RESEARCH.md)
+
 1차 공개물은 **UI·정보구조 검증용 샘플 MVP**로 한정한다. 아래 P0 데이터의 사용권·정합성·비용이 검증되기 전에는 실제 기업정보 서비스로 표시하지 않는다.
 
 ## Candidate matrix
