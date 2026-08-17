@@ -27,11 +27,12 @@ export function FinancialExplorer({ company }: { company: Company }) {
   const [filter, setFilter] = useState<StatementFilter>("전체")
   const [unit, setUnit] = useState<FinancialUnit>("억원")
   const records = useMemo(() => selectFinancialRecords(company.financials, 5), [company.financials])
+  const latest = records[0]
   const rows = ACCOUNT_ROWS.filter(([, , statement]) => filter === "전체" || statement === filter)
   const maximumPositiveRevenue = Math.max(...records.map((record) => Math.max(record.revenue ?? 0, 0)), 0)
 
   return <div className="space-y-6">
-    <section className="rounded-2xl border border-[var(--color-baltic-sea-800)] bg-[var(--color-baltic-sea-900)] p-5 sm:p-7">
+    <section className="rounded-lg border border-[var(--border-subtle)] bg-white p-5 sm:p-7">
       <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div><p className="text-sm text-[var(--color-keppel-400)]">재무 탐색</p><h1 className="mt-2 text-3xl font-semibold">{company.name} 재무정보</h1><p className="mt-3 text-sm text-[var(--color-baltic-sea-400)]">최근 {records.length}개년 핵심 계정을 같은 재무 구분으로 비교합니다.</p></div>
         <div className="flex flex-col gap-3 sm:flex-row">
@@ -41,8 +42,11 @@ export function FinancialExplorer({ company }: { company: Company }) {
       </div>
     </section>
 
-    <section className="rounded-2xl border border-[var(--color-baltic-sea-800)] bg-[var(--color-baltic-sea-900)] p-5 sm:p-7">
-      <div className="flex items-center justify-between"><div><p className="text-sm text-[var(--color-keppel-400)]">CHART</p><h2 className="mt-1 text-xl font-semibold">매출 추이</h2></div><span className="rounded-full border border-amber-800/60 bg-amber-950/40 px-3 py-1 text-xs text-amber-300">화면 검증용 샘플</span></div>
+    {latest && <section aria-labelledby="financial-summary-heading"><div className="mb-4 flex items-end justify-between"><div><p className="text-sm text-[var(--color-keppel-400)]">재무 개요</p><h2 id="financial-summary-heading" className="mt-1 text-2xl font-semibold">{latest.year}년 재무 요약</h2></div><span className="text-xs text-[var(--color-baltic-sea-500)]">{latest.statementType} · {unit}</span></div><div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{[["매출", latest.revenue], ["영업이익", latest.operatingIncome], ["자산", latest.assets], ["자본", latest.equity]].map(([label, value]) => <article key={String(label)} className="rounded-2xl border border-[var(--color-baltic-sea-800)] bg-[var(--color-baltic-sea-900)] p-5"><p className="text-xs text-[var(--color-baltic-sea-500)]">{label}</p><p className="mt-3 font-mono text-lg font-semibold">{formatConvertedValue(value as number | null, unit)}</p></article>)}</div></section>}
+
+    {records.length === 0 ? <section className="rounded-2xl border border-dashed border-[var(--color-baltic-sea-700)] p-10 text-center"><h2 className="text-xl font-semibold">재무정보 미수집</h2><p className="mt-3 text-sm text-[var(--color-baltic-sea-400)]">이 기업의 공식 재무제표를 아직 수집하지 못했습니다. 기업 개요와 재무 수집 상태를 구분해 표시합니다.</p></section> : <>
+    <section className="rounded-lg border border-[var(--border-subtle)] bg-white p-5 sm:p-7">
+      <div className="flex items-center justify-between"><div><p className="text-sm text-[var(--accent-hover)]">Chart</p><h2 className="mt-1 text-xl font-medium">매출 추이</h2></div><span className={`rounded-full border px-3 py-1 text-xs ${company.source.isSample ? "border-amber-200 bg-amber-50 text-amber-800" : "border-sky-200 bg-sky-50 text-sky-800"}`}>{company.source.isSample ? "화면 검증용 샘플" : "공식 재무 데이터"}</span></div>
       <p id="revenue-chart-summary" className="sr-only">{records.map((record) => `${record.year}년 매출 ${formatConvertedValue(record.revenue, unit)}${record.revenue === null ? "" : ` ${unit}`}${record.revenue !== null && record.revenue < 0 ? " 음수" : ""}`).join(", ")}</p>
       <div className="mt-8 overflow-x-auto" role="img" aria-label="연도별 매출 막대 차트" aria-describedby="revenue-chart-summary">
         <div
@@ -68,7 +72,8 @@ export function FinancialExplorer({ company }: { company: Company }) {
     </section>
 
     <section className="overflow-hidden rounded-2xl border border-[var(--color-baltic-sea-800)] bg-[var(--color-baltic-sea-900)]"><div className="border-b border-[var(--color-baltic-sea-800)] p-6"><h2 className="text-xl font-semibold">계정과목별 재무표</h2><p className="mt-2 text-xs text-[var(--color-baltic-sea-500)]">단위: {unit} · {records[0]?.statementType ?? "정보 없음"}</p></div><div className="overflow-x-auto"><table className="w-full min-w-[760px] text-sm"><caption className="sr-only">{company.name} 계정과목별 연도 재무표</caption><thead><tr className="border-b border-[var(--color-baltic-sea-800)] text-left text-xs text-[var(--color-baltic-sea-500)]"><th scope="col" className="px-6 py-4">계정과목</th>{records.map((record) => <th scope="col" key={record.year} className="px-6 py-4 text-right">{record.year}</th>)}</tr></thead><tbody>{rows.map(([label, key]) => <tr key={key} className="border-b border-[var(--color-baltic-sea-800)] last:border-0"><th scope="row" className="px-6 py-4 text-left font-medium">{label}</th>{records.map((record) => <td key={record.year} className={`px-6 py-4 text-right font-mono ${record[key as FinancialKey] !== null && (record[key as FinancialKey] as number) < 0 ? "text-rose-400" : ""}`}>{formatConvertedValue(record[key as FinancialKey], unit)}</td>)}</tr>)}</tbody></table></div></section>
+    </>}
 
-    <section className="rounded-2xl border border-[var(--color-keppel-900)] bg-[var(--color-keppel-950)] p-5 text-sm"><strong className="text-[var(--color-keppel-200)]">데이터 안내</strong><p className="mt-2 leading-relaxed text-[var(--color-baltic-sea-400)]">{company.source.label}이며 실제 기업 재무가 아닙니다. 출처: {company.source.label} · 기준일: {company.source.asOf} · 재무 구분: 샘플</p></section>
+    <section className="rounded-2xl border border-[var(--color-keppel-900)] bg-[var(--color-keppel-950)] p-5 text-sm"><strong className="text-[var(--color-keppel-200)]">데이터 안내</strong><p className="mt-2 leading-relaxed text-[var(--color-baltic-sea-400)]">{company.financialSource?.label ?? company.source.label} · 제공기관: {company.financialSource?.provider ?? company.source.provider} · 기준일: {company.financialSource?.asOf ?? company.source.asOf} · 재무 구분: {records[0]?.statementType ?? "미수집"}. {company.source.indexingApproved ? "품질 검수 및 색인 승인이 완료되었습니다." : "품질 검수 전이라 검색엔진 색인을 허용하지 않습니다."}</p></section>
   </div>
 }

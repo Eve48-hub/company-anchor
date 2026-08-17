@@ -20,5 +20,5 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="ko"><body className={`${geist.variable} ${geistMono.variable} font-sans antialiased`}>{children}</body></html>
+  return <html lang="ko"><body className={`${geist.variable} ${geistMono.variable} font-sans antialiased`}><a href="#main-content" className="fixed left-4 top-4 z-[100] -translate-y-24 rounded-full bg-[var(--color-keppel-300)] px-4 py-2 text-sm font-semibold text-[var(--color-baltic-sea-950)] transition focus:translate-y-0">본문 바로가기</a>{children}</body></html>
 }

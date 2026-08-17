@@ -28,6 +28,17 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run lint
+      - name: Fetch official company data at build time
+        if: github.event_name != 'pull_request'
+        env:
+          DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+          OPEN_DART_API_KEY: ${{ secrets.OPEN_DART_API_KEY }}
+        run: |
+          if [ -n "$DATA_GO_KR_SERVICE_KEY" ]; then
+            npm run data:fetch
+          else
+            echo "DATA_GO_KR_SERVICE_KEY is not configured; keeping the committed safe dataset."
+          fi
       - run: npm run build
       - uses: actions/configure-pages@v5
         if: github.event_name != 'pull_request'
