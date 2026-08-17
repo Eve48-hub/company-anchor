@@ -2,7 +2,10 @@ import type { Company } from "./types"
 
 const sampleSource = {
   label: "화면 검증용 샘플 데이터",
+  provider: "기업앵커",
+  url: "https://eve48-hub.github.io/company-anchor/",
   asOf: "2026-08-15",
+  retrievedAt: "2026-08-15T00:00:00.000Z",
   isSample: true,
   indexingApproved: false,
 } as const

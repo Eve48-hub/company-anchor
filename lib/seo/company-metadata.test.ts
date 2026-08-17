@@ -14,7 +14,7 @@ const company: Company = {
   foundedAt: "2021-01-01",
   website: "https://example.com",
   description: "테스트 기업 설명입니다.",
-  source: { label: "화면 검증용 샘플 데이터", asOf: "2026-08-15", isSample: true, indexingApproved: false },
+  source: { label: "화면 검증용 샘플 데이터", provider: "기업앵커", url: "https://example.com", asOf: "2026-08-15", retrievedAt: "2026-08-15T00:00:00.000Z", isSample: true, indexingApproved: false },
   financials: [{ year: 2025, revenue: 1, operatingIncome: 0, netIncome: null, assets: 1, liabilities: 0, equity: 1, statementType: "샘플" }],
 }
 
@@ -24,7 +24,12 @@ describe("company SEO", () => {
     expect(buildCompanyMetadata(company, "profile").robots).toEqual({ index: false, follow: false })
     const realButUnapproved = { ...company, source: { ...company.source, isSample: false } }
     expect(getCompanyIndexability(realButUnapproved)).toEqual({ index: false, follow: false })
-    const approved = { ...realButUnapproved, source: { ...realButUnapproved.source, indexingApproved: true } }
+    const approvedWithoutFinancialSource = { ...realButUnapproved, source: { ...realButUnapproved.source, indexingApproved: true } }
+    expect(getCompanyIndexability(approvedWithoutFinancialSource)).toEqual({ index: false, follow: false })
+    const approved = {
+      ...approvedWithoutFinancialSource,
+      financialSource: { ...approvedWithoutFinancialSource.source, label: "OpenDART", provider: "금융감독원 OpenDART" },
+    }
     expect(getCompanyIndexability(approved)).toEqual({ index: true, follow: true })
   })
 

@@ -6,11 +6,11 @@ const stages = [
 
 export function ProcessSection() {
   return (
-    <section className="border-y border-[var(--color-baltic-sea-800)] bg-[var(--color-baltic-sea-950)]/40">
-      <div className="mx-auto max-w-[1400px] px-4 py-24 sm:px-6 lg:px-12">
-        <div className="mb-14 text-center"><p className="text-sm text-[var(--color-keppel-400)]">HOW IT WORKS</p><h2 className="mt-3 text-3xl font-semibold sm:text-5xl">필요한 기업을 세 단계로</h2></div>
-        <div className="grid gap-4 md:grid-cols-3">
-          {stages.map(([number, title, text]) => <div key={number} className="relative rounded-2xl border border-[var(--color-baltic-sea-800)] bg-background p-7"><span className="font-mono text-sm text-[var(--color-keppel-400)]">{number}</span><h3 className="mt-8 text-2xl font-semibold">{title}</h3><p className="mt-3 text-[var(--color-baltic-sea-400)]">{text}</p></div>)}
+    <section className="border-y border-[var(--border-subtle)] bg-[var(--surface-subtle)]">
+      <div className="mx-auto max-w-[1184px] px-4 py-24 sm:px-6 lg:py-28">
+        <div className="mb-12"><p className="font-mono text-xs uppercase tracking-[0.14em] text-[var(--accent-hover)]">How it works</p><h2 className="mt-3 text-3xl font-normal tracking-[-0.03em] sm:text-4xl">필요한 기업을 세 단계로</h2></div>
+        <div className="grid overflow-hidden rounded-xl border border-[var(--border)] bg-white md:grid-cols-3">
+          {stages.map(([number, title, text]) => <div key={number} className="border-b border-[var(--border-subtle)] p-7 last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0"><span className="font-mono text-xs text-[var(--foreground-muted)]">{number}</span><h3 className="mt-12 text-xl font-medium">{title}</h3><p className="mt-3 text-sm text-[var(--foreground-secondary)]">{text}</p></div>)}
         </div>
       </div>
     </section>

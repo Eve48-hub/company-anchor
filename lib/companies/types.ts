@@ -1,8 +1,11 @@
-export type CompanyStatus = "영업중" | "휴업" | "폐업"
+export type CompanyStatus = "영업중" | "휴업" | "폐업" | "정보 없음"
 
 export interface DataSource {
   label: string
+  provider: string
+  url: string
   asOf: string
+  retrievedAt: string
   isSample: boolean
   indexingApproved: boolean
 }
@@ -29,6 +32,12 @@ export interface Company {
   foundedAt: string
   website: string
   description: string
+  representative?: string
+  employeeCount?: number | null
+  market?: string
+  mainBusiness?: string
+  fiscalMonth?: number | null
   source: DataSource
+  financialSource?: DataSource
   financials: FinancialRecord[]
 }

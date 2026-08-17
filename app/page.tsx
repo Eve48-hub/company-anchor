@@ -7,5 +7,5 @@ import { Header } from "@/components/header"
 import { HeroSection } from "@/components/hero-section"
 
 export default function Home() {
-  return <div className="min-h-screen bg-background"><Header /><main><HeroSection /><FeatureGrid /><ProcessSection /><DataReadiness /><FaqAndCta /></main><Footer /></div>
+  return <div className="min-h-screen bg-background"><Header /><main id="main-content"><HeroSection /><FeatureGrid /><ProcessSection /><DataReadiness /><FaqAndCta /></main><Footer /></div>
 }

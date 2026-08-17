@@ -7,7 +7,7 @@ export type CompanyPageKind = "profile" | "financials"
 
 export function getCompanyIndexability(company: Company): { index: boolean; follow: boolean } {
   const hasCoreIdentity = Boolean(company.name && company.industry && company.location && company.description)
-  const hasFinancialSource = company.financials.length > 0 && Boolean(company.source.label)
+  const hasFinancialSource = company.financials.length > 0 && Boolean(company.financialSource?.label && company.financialSource?.url)
   const indexable = company.source.indexingApproved && !company.source.isSample && hasCoreIdentity && hasFinancialSource
   return { index: indexable, follow: indexable }
 }
